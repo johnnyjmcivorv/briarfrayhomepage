@@ -74,3 +74,13 @@ html.is-custom-home.bf-img-ready .home-tagline,
 html.is-custom-home.bf-img-ready .home-enter {
   display: block;
 }
+
+/* Prevent broken-image icon / alt text before src is set */
+html.is-custom-home #bf-home-random-img {
+  display: none;
+}
+
+/* Show it only after the real image has loaded */
+html.is-custom-home.bf-img-ready #bf-home-random-img {
+  display: block;
+}
