@@ -1,8 +1,15 @@
 /* =========================================================
-   Custom Homepage (Briar Fray)
+   Briar Fray — Custom Homepage CSS (from scratch)
+   Goals:
+   - Centered hero layout
+   - Hide Discourse header ONLY on /
+   - No flicker/jank: image + text hidden until bf-img-ready
+   - Image: NEVER upscale smaller images
+           only shrink large images to fit caps
    ========================================================= */
 
-.custom-home {
+/* ---------- Layout shell ---------- */
+html.is-custom-home body.is-custom-home .custom-home {
   min-height: calc(100vh - var(--header-offset, 0px));
   display: flex;
   flex-direction: column;
@@ -13,7 +20,7 @@
   padding: 2rem;
 }
 
-/* Hide the top navigation ONLY on the homepage */
+/* ---------- Hide Discourse top header ONLY on homepage ---------- */
 html.is-custom-home .d-header {
   display: none;
 }
@@ -22,65 +29,78 @@ html.is-custom-home #main-outlet {
   padding-top: 0;
 }
 
-/* Title block */
-.home-title-block {
-  margin-bottom: 0.5rem;
-}
-
-.home-kicker {
-  font-size: 0.9rem;
-  letter-spacing: 0.05em;
-  opacity: 0.7;
+/* ---------- Title block ---------- */
+html.is-custom-home .home-title-block {
   margin-bottom: 0.25rem;
 }
 
-.home-name {
+html.is-custom-home .home-kicker {
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  margin: 0 0 0.25rem 0;
+}
+
+html.is-custom-home .home-name {
   font-size: 3rem;
   font-weight: 400;
   line-height: 1.1;
+  margin: 0;
 }
 
-/* Image: fixed width, proportional height, capped */
-#bf-home-random-img {
+/* ---------- Hero image (NO UPSCALING) ---------- */
+/* Default: hidden (prevents broken-image icon / alt flashes) */
+html.is-custom-home #bf-home-random-img {
+  display: none;
+
+  /* Never force size upward */
+  width: auto;
+  height: auto;
+
+  /* Only shrink to fit these caps */
+  max-width: 500px;
+  max-height: 550px;
+
+  /* Safety: never crop, never distort */
+  object-fit: contain;
+}
+
+/* Once loaded: show */
+html.is-custom-home.bf-img-ready #bf-home-random-img {
   display: block;
-
-  width: 500px;
-  max-width: 100%;
-
-  height: auto;          /* preserve aspect ratio */
-  max-height: 550px;     /* your cap */
-
-  object-fit: contain;   /* if both constraints apply, never stretch */
 }
 
-/* Tagline */
-.home-tagline {
+/* Mobile: allow shrinking to viewport width */
+@media (max-width: 520px) {
+  html.is-custom-home #bf-home-random-img {
+    max-width: 100%;
+  }
+}
+
+/* ---------- Tagline ---------- */
+html.is-custom-home .home-tagline {
   max-width: 520px;
   font-size: 1rem;
   opacity: 0.75;
-  margin-top: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin: 0.25rem 0 0.5rem 0;
 }
 
-/* Only show homepage text after the image is loaded */
+/* ---------- Button ---------- */
+html.is-custom-home .home-enter {
+  margin-top: 0.25rem;
+}
+
+/* ---------- Load gating (no layout push) ---------- */
+/* Hide text + button until image is ready */
 html.is-custom-home .home-title-block,
 html.is-custom-home .home-tagline,
 html.is-custom-home .home-enter {
   display: none;
 }
 
+/* Reveal instantly once image has loaded */
 html.is-custom-home.bf-img-ready .home-title-block,
 html.is-custom-home.bf-img-ready .home-tagline,
 html.is-custom-home.bf-img-ready .home-enter {
-  display: block;
-}
-
-/* Prevent broken-image icon / alt text before src is set */
-html.is-custom-home #bf-home-random-img {
-  display: none;
-}
-
-/* Show it only after the real image has loaded */
-html.is-custom-home.bf-img-ready #bf-home-random-img {
   display: block;
 }
