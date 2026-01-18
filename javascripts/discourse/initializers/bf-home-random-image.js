@@ -10,13 +10,15 @@ const IMAGES = [
 ];
 
 export default apiInitializer((api) => {
-  api.onPageChange((url) => {
-    const isHome = url === "/";
+  api.onPageChange(() => {
+    // Reliable homepage detection (doesn't depend on Discourse's url arg)
+    const isHome = window.location.pathname === "/";
 
-    // Toggle body class
+    // CRITICAL: toggle on BOTH html and body so it never "sticks"
+    document.documentElement.classList.toggle("is-custom-home", isHome);
     document.body.classList.toggle("is-custom-home", isHome);
 
-    // Random image logic
+    // Random image only on homepage
     if (!isHome) return;
 
     const img = document.getElementById("bf-home-random-img");
