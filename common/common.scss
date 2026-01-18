@@ -2,7 +2,6 @@
    Custom Homepage (Briar Fray)
    ========================================================= */
 
-/* --- Layout wrapper --- */
 .custom-home {
   min-height: calc(100vh - var(--header-offset, 0px));
   display: flex;
@@ -14,7 +13,7 @@
   padding: 2rem;
 }
 
-/* --- Hide the top navigation ONLY on the homepage --- */
+/* Hide the top navigation ONLY on the homepage */
 html.is-custom-home .d-header {
   display: none;
 }
@@ -24,7 +23,7 @@ html.is-custom-home #main-outlet {
   padding-top: 0;
 }
 
-/* --- Title block ABOVE the image --- */
+/* Title block ABOVE the image */
 .home-title-block {
   margin-bottom: 0.5rem;
 }
@@ -42,17 +41,26 @@ html.is-custom-home #main-outlet {
   line-height: 1.1;
 }
 
-/* --- Reserve image space to prevent "jump" on load --- */
+/* =========================================================
+   Image frame (no cropping, orientation-aware)
+   ========================================================= */
+
+/* Default (portrait / square) */
 .home-image-frame {
   width: 500px;
   max-width: 100%;
-  height: 550px; /* adjust: 280–380 to taste */
+  height: 550px;                 /* your tall frame */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Keep proportions intact inside the fixed frame */
+/* Landscape images get a shorter frame */
+.home-image-frame.is-landscape {
+  height: 320px;                 /* tweak this to taste */
+}
+
+/* Keep proportions intact inside the frame */
 #bf-home-random-img {
   max-width: 100%;
   max-height: 100%;
@@ -61,7 +69,7 @@ html.is-custom-home #main-outlet {
   display: block;
 }
 
-/* --- Tagline text below the image --- */
+/* Tagline text below the image */
 .home-tagline {
   max-width: 520px;
   font-size: 1rem;
@@ -69,5 +77,3 @@ html.is-custom-home #main-outlet {
   margin-top: 0.5rem;
   margin-bottom: 0.75rem;
 }
-
-
