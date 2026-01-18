@@ -25,3 +25,31 @@ body.is-custom-home .d-header {
 body.is-custom-home #main-outlet {
   padding-top: 0 !important;
 }
+.home-hero {
+  position: relative;
+  display: inline-block;
+}
+
+.home-title {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #fff;
+  pointer-events: none;
+}
+
+.home-kicker {
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  opacity: 0.85;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.home-name {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+}
