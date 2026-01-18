@@ -62,14 +62,13 @@ html.is-custom-home #main-outlet {
   margin-bottom: 0.75rem;
 }
 
-/* Hide homepage text until image has loaded */
+/* Only show homepage text after the image is loaded */
 html.is-custom-home .home-title-block,
 html.is-custom-home .home-tagline,
 html.is-custom-home .home-enter {
   display: none;
 }
 
-/* Show them once the image is ready */
 html.is-custom-home.bf-img-ready .home-title-block,
 html.is-custom-home.bf-img-ready .home-tagline,
 html.is-custom-home.bf-img-ready .home-enter {
