@@ -3,6 +3,9 @@ import { apiInitializer } from "discourse/lib/api";
 const IMAGES = [
   "https://i.imgur.com/QopcbDo.jpg",
   "https://i.imgur.com/RQEMEV6.jpg",
+  "https://i.imgur.com/Yza7azn.png",
+  "https://i.imgur.com/xN1oJK2.gif",
+  "https://i.imgur.com/iIVkzqo.png",
 ];
 
 export default apiInitializer((api) => {
