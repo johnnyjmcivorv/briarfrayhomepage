@@ -1,5 +1,4 @@
 import { apiInitializer } from "discourse/lib/api";
-import { startLoading, stopLoading } from "discourse/lib/loading-slider";
 
 const IMAGES = [
   "https://i.imgur.com/QopcbDo.jpg",
@@ -39,23 +38,22 @@ function setRandomHomepageImage() {
   // Pick next image
   const nextSrc = pickRandom(IMAGES);
 
-  const markReady = () => {
+  // When it loads, mark ready (instant show; no fade)
+  img.onload = () => {
     document.documentElement.classList.add("bf-img-ready");
-    stopLoading(); // stop green loading bar once home is stable
   };
 
-  // When it loads, mark ready (instant show; no fade)
-  img.onload = markReady;
-
   // If it fails, still mark ready so the page isn't blank forever
-  img.onerror = markReady;
+  img.onerror = () => {
+    document.documentElement.classList.add("bf-img-ready");
+  };
 
   // Trigger the load
   img.src = nextSrc;
 
   // Handle the "cached image" case where onload may not fire reliably
   if (img.complete && img.naturalWidth > 0) {
-    markReady();
+    document.documentElement.classList.add("bf-img-ready");
   }
 }
 
@@ -69,11 +67,9 @@ export default apiInitializer((api) => {
     document.documentElement.classList.toggle("is-custom-home", isHome);
     document.body.classList.toggle("is-custom-home", isHome);
 
-    // If we leave the homepage, clear the "ready" state so it can't stick,
-    // and ensure the loading bar can't get stuck either.
+    // If we leave the homepage, clear the "ready" state so it can't stick
     if (!isHome) {
       document.documentElement.classList.remove("bf-img-ready");
-      stopLoading();
     }
 
     // Header link behavior:
@@ -95,13 +91,6 @@ export default apiInitializer((api) => {
           const target = nowIsLatest ? "/" : "/latest";
 
           e.preventDefault();
-
-          // Only show the green loading bar for the /latest -> / transition,
-          // because the homepage intentionally waits on the hero image.
-          if (target === "/") {
-            startLoading();
-          }
-
           api.navigateTo(target);
         });
       }
