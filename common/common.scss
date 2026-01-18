@@ -18,12 +18,11 @@ html.is-custom-home .d-header {
   display: none;
 }
 
-/* Remove extra top spacing when header is hidden */
 html.is-custom-home #main-outlet {
   padding-top: 0;
 }
 
-/* Title block ABOVE the image */
+/* Title block */
 .home-title-block {
   margin-bottom: 0.5rem;
 }
@@ -41,35 +40,16 @@ html.is-custom-home #main-outlet {
   line-height: 1.1;
 }
 
-/* =========================================================
-   Image frame (no cropping, orientation-aware)
-   ========================================================= */
-
-/* Default (portrait / square) */
-.home-image-frame {
+/* Image: fixed width, organic height, but capped */
+#bf-home-random-img {
   width: 500px;
   max-width: 100%;
-  height: 550px;                 /* your tall frame */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Landscape images get a shorter frame */
-.home-image-frame.is-landscape {
-  height: 320px;                 /* tweak this to taste */
-}
-
-/* Keep proportions intact inside the frame */
-#bf-home-random-img {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
   height: auto;
+  max-height: 550px;   /* keep your “height maximum” */
   display: block;
 }
 
-/* Tagline text below the image */
+/* Tagline */
 .home-tagline {
   max-width: 520px;
   font-size: 1rem;
