@@ -40,13 +40,17 @@ html.is-custom-home #main-outlet {
   line-height: 1.1;
 }
 
-/* Image: fixed width, organic height, but capped */
+/* Image: fixed width, proportional height, capped */
 #bf-home-random-img {
+  display: block;
+
   width: 500px;
   max-width: 100%;
-  height: auto;
-  max-height: 550px;   /* keep your “height maximum” */
-  display: block;
+
+  height: auto;          /* preserve aspect ratio */
+  max-height: 550px;     /* your cap */
+
+  object-fit: contain;   /* if both constraints apply, never stretch */
 }
 
 /* Tagline */
