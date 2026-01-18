@@ -6,6 +6,7 @@ const IMAGES = [
   "https://i.imgur.com/Yza7azn.png",
   "https://i.imgur.com/xN1oJK2.gif",
   "https://i.imgur.com/iIVkzqo.png",
+  "https://i.imgur.com/9eGxskv.jpg",
 ];
 
 export default apiInitializer((api) => {
