@@ -1,0 +1,8 @@
+<script>
+  // Prevent "header flash" on first paint
+  (function () {
+    if (window.location && window.location.pathname === "/") {
+      document.documentElement.classList.add("is-custom-home");
+    }
+  })();
+</script>
