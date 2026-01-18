@@ -48,7 +48,7 @@ html.is-custom-home #main-outlet {
   max-width: 100%;
 
   height: auto;          /* preserve aspect ratio */
-  max-height: 550px;     /* your cap */
+  max-height: 500px;     /* your cap */
 
   object-fit: contain;   /* if both constraints apply, never stretch */
 }
