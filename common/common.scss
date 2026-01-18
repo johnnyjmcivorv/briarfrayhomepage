@@ -46,3 +46,11 @@ body.is-custom-home #main-outlet {
   font-weight: 400 !important; /* <-- unbold */
   line-height: 1.1 !important;
 }
+
+.home-tagline {
+  max-width: 520px;
+  font-size: 1rem;
+  opacity: 0.75;
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
