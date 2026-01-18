@@ -106,52 +106,46 @@ html.is-custom-home.bf-img-ready .home-enter {
 }
 
 /* =========================================================
-   Full-viewport "concussion wake-up" overlay
+   Full-screen "concussion wake-up" (works everywhere)
+   - Blurs the actual content via filter (reliable)
+   - Adds a haze overlay for the “filter on top” vibe
    ========================================================= */
 
-/* Create a positioning context */
-html.is-custom-home body {
-  position: relative;
+/* Blur the whole page content on the homepage */
+html.is-custom-home #main-outlet {
+  filter: blur(22px);
+  transition: filter 1200ms ease-out;
+  will-change: filter;
 }
 
-/* Overlay lives on the viewport */
-html.is-custom-home body::before {
+/* When ready, unblur */
+html.is-custom-home.bf-img-ready #main-outlet {
+  filter: blur(0);
+}
+
+/* Haze overlay on top of everything */
+html.is-custom-home::before {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 9999;
-
-  /* The filter */
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-
-  /* Slight milky haze so it reads as a filter */
-  background: rgba(0, 0, 0, 0.08);
-
-  /* Start ON */
-  opacity: 1;
-
+  z-index: 99999;
   pointer-events: none;
 
-  /* Slow, perceptual unblur */
-  transition:
-    opacity 900ms ease-out,
-    backdrop-filter 900ms ease-out,
-    -webkit-backdrop-filter 900ms ease-out;
-
-  will-change: opacity, backdrop-filter;
+  background: rgba(0, 0, 0, 0.10);
+  opacity: 1;
+  transition: opacity 1200ms ease-out;
+  will-change: opacity;
 }
 
-/* When homepage image is ready, clear the overlay */
-html.is-custom-home.bf-img-ready body::before {
+/* Fade haze away when ready */
+html.is-custom-home.bf-img-ready::before {
   opacity: 0;
-  backdrop-filter: blur(0);
-  -webkit-backdrop-filter: blur(0);
 }
 
-/* Reduced motion: no animation */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  html.is-custom-home body::before {
+  html.is-custom-home #main-outlet,
+  html.is-custom-home::before {
     transition: none;
   }
 }
