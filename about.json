@@ -1,0 +1,7 @@
+{
+  "name": "Custom Discourse Homepage",
+  "component": true,
+  "modifiers": {
+    "custom_homepage": "true"
+  }
+}
