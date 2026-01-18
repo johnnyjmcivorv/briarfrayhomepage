@@ -7,7 +7,13 @@ const IMAGES = [
 
 export default apiInitializer((api) => {
   api.onPageChange((url) => {
-    if (url !== "/") return;
+    const isHome = url === "/";
+
+    // Toggle body class
+    document.body.classList.toggle("is-custom-home", isHome);
+
+    // Random image logic
+    if (!isHome) return;
 
     const img = document.getElementById("bf-home-random-img");
     if (!img) return;
