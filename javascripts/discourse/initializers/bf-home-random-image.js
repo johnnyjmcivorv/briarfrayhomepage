@@ -23,34 +23,54 @@ function findHeaderHomeLink() {
   );
 }
 
+function setHomepageImage() {
+  const img = document.getElementById("bf-home-random-img");
+  if (!img) return;
+
+  const frame = document.querySelector(".home-image-frame");
+
+  // Clear any prior handler + class before loading the next image
+  img.onload = null;
+  if (frame) frame.classList.remove("is-landscape");
+
+  img.onload = () => {
+    if (!frame) return;
+    const isLandscape = img.naturalWidth > img.naturalHeight;
+    frame.classList.toggle("is-landscape", isLandscape);
+  };
+
+  img.src = pickRandom(IMAGES);
+}
+
 export default apiInitializer((api) => {
   function applyRouteBehavior() {
     const path = window.location.pathname;
-    const isHome = path === "/";
-    const isLatest = path === "/latest"; // keep it strict since you asked specifically "latest page"
 
-    // Keep your "hide header only on homepage" behavior consistent
+    const isHome = path === "/";
+    const isLatest = path === "/latest";
+
+    // Homepage-only class (used by CSS to hide header only on /)
     document.documentElement.classList.toggle("is-custom-home", isHome);
     document.body.classList.toggle("is-custom-home", isHome);
 
-    // Set the header home-link destination:
-    // - on /latest -> /
-    // - everywhere else -> /latest
+    // Header link behavior:
+    // - from /latest clicking "home" goes to /
+    // - from anywhere else clicking "home" goes to /latest
     const headerLink = findHeaderHomeLink();
     if (headerLink) {
-      const target = isLatest ? "/" : "/latest";
-      headerLink.setAttribute("href", target);
+      const targetHref = isLatest ? "/" : "/latest";
+      headerLink.setAttribute("href", targetHref);
 
-      // Bind click once so SPA navigation behaves nicely (no full reload)
-      if (!headerLink.dataset.bfBound) {
-        headerLink.dataset.bfBound = "1";
+      // Bind once so SPA navigation behaves nicely
+      if (!headerLink.dataset.bfHomeBound) {
+        headerLink.dataset.bfHomeBound = "1";
+
         headerLink.addEventListener("click", (e) => {
-          const nowPath = window.location.pathname;
-          const nowIsLatest = nowPath === "/latest";
-          const dest = nowIsLatest ? "/" : "/latest";
-
-          // allow ctrl/cmd click to open in new tab
+          // allow ctrl/cmd click to open in new tab, etc.
           if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+
+          const nowPath = window.location.pathname;
+          const dest = nowPath === "/latest" ? "/" : "/latest";
 
           e.preventDefault();
           api.navigateTo(dest);
@@ -58,19 +78,10 @@ export default apiInitializer((api) => {
       }
     }
 
-    // Random image only on homepage
-    if (!isHome) return;
-
-    const img = document.getElementById("bf-home-random-img");
-    if (!img) return;
-
-    img.src = pickRandom(IMAGES);
+    // Random image (and landscape detection) only on homepage
+    if (isHome) setHomepageImage();
   }
 
-  api.onPageChange(() => {
-    applyRouteBehavior();
-  });
-
-  // Run once on boot
-  applyRouteBehavior();
+  api.onPageChange(() => applyRouteBehavior());
+  applyRouteBehavior(); // run once on boot
 });
