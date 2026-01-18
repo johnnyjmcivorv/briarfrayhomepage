@@ -1,4 +1,3 @@
-
 import { apiInitializer } from "discourse/lib/api";
 
 const IMAGES = [
@@ -29,8 +28,15 @@ function setRandomHomepageImage() {
   const img = document.getElementById("bf-home-random-img");
   if (!img) return;
 
-  // Clear any previous onload handlers (avoid stacking)
+  // Hide text until the image finishes loading
+  document.documentElement.classList.remove("bf-img-ready");
+
+  // Avoid stacking handlers across route changes
   img.onload = null;
+
+  img.onload = () => {
+    document.documentElement.classList.add("bf-img-ready");
+  };
 
   img.src = pickRandom(IMAGES);
 }
@@ -41,9 +47,13 @@ export default apiInitializer((api) => {
     const isHome = path === "/";
     const isLatest = path === "/latest";
 
-    // Used by CSS to hide the header only on the homepage
     document.documentElement.classList.toggle("is-custom-home", isHome);
     document.body.classList.toggle("is-custom-home", isHome);
+
+    // If we leave the homepage, clear "ready" so it doesn't stick
+    if (!isHome) {
+      document.documentElement.classList.remove("bf-img-ready");
+    }
 
     // Header link behavior:
     // - on /latest -> /
@@ -53,15 +63,12 @@ export default apiInitializer((api) => {
       const dest = isLatest ? "/" : "/latest";
       headerLink.setAttribute("href", dest);
 
-      // Bind click once so SPA navigation behaves nicely (no full reload)
       if (!headerLink.dataset.bfHomeBound) {
         headerLink.dataset.bfHomeBound = "1";
         headerLink.addEventListener("click", (e) => {
-          // allow ctrl/cmd click to open in new tab
           if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
 
-          const nowPath = window.location.pathname;
-          const nowIsLatest = nowPath === "/latest";
+          const nowIsLatest = window.location.pathname === "/latest";
           const target = nowIsLatest ? "/" : "/latest";
 
           e.preventDefault();
@@ -70,10 +77,9 @@ export default apiInitializer((api) => {
       }
     }
 
-    // Random image only on homepage
     if (isHome) setRandomHomepageImage();
   }
 
   api.onPageChange(() => applyRouteBehavior());
-  applyRouteBehavior(); // run once on boot
+  applyRouteBehavior();
 });
