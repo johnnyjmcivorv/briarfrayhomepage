@@ -28,17 +28,33 @@ function setRandomHomepageImage() {
   const img = document.getElementById("bf-home-random-img");
   if (!img) return;
 
-  // Hide text until the image finishes loading
+  // Mark "not ready" BEFORE changing src (prevents broken icon/alt flashes if CSS hides until ready)
   document.documentElement.classList.remove("bf-img-ready");
 
-  // Avoid stacking handlers across route changes
+  // Clear old handlers
   img.onload = null;
+  img.onerror = null;
 
+  // Pick next image
+  const nextSrc = pickRandom(IMAGES);
+
+  // When it loads, mark ready (instant show; no fade)
   img.onload = () => {
     document.documentElement.classList.add("bf-img-ready");
   };
 
-  img.src = pickRandom(IMAGES);
+  // If it fails, still mark ready so the page isn't blank forever
+  img.onerror = () => {
+    document.documentElement.classList.add("bf-img-ready");
+  };
+
+  // Trigger the load
+  img.src = nextSrc;
+
+  // Handle the "cached image" case where onload may not fire reliably
+  if (img.complete && img.naturalWidth > 0) {
+    document.documentElement.classList.add("bf-img-ready");
+  }
 }
 
 export default apiInitializer((api) => {
@@ -47,10 +63,11 @@ export default apiInitializer((api) => {
     const isHome = path === "/";
     const isLatest = path === "/latest";
 
+    // Homepage-only class (used by CSS to hide header etc.)
     document.documentElement.classList.toggle("is-custom-home", isHome);
     document.body.classList.toggle("is-custom-home", isHome);
 
-    // If we leave the homepage, clear "ready" so it doesn't stick
+    // If we leave the homepage, clear the "ready" state so it can't stick
     if (!isHome) {
       document.documentElement.classList.remove("bf-img-ready");
     }
@@ -63,9 +80,11 @@ export default apiInitializer((api) => {
       const dest = isLatest ? "/" : "/latest";
       headerLink.setAttribute("href", dest);
 
+      // Bind click once (SPA-friendly)
       if (!headerLink.dataset.bfHomeBound) {
         headerLink.dataset.bfHomeBound = "1";
         headerLink.addEventListener("click", (e) => {
+          // allow ctrl/cmd click to open in new tab
           if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
 
           const nowIsLatest = window.location.pathname === "/latest";
@@ -77,9 +96,11 @@ export default apiInitializer((api) => {
       }
     }
 
+    // Random image only on homepage
     if (isHome) setRandomHomepageImage();
   }
 
   api.onPageChange(() => applyRouteBehavior());
-  applyRouteBehavior();
+  applyRouteBehavior(); // run once on boot
 });
+
