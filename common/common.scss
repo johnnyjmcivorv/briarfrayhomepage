@@ -106,49 +106,52 @@ html.is-custom-home.bf-img-ready .home-enter {
 }
 
 /* =========================================================
-   Full-page "concussion" blur overlay on homepage
-   Triggered by html.is-custom-home + removed by bf-img-ready
+   Full-viewport "concussion wake-up" overlay
    ========================================================= */
 
-html.is-custom-home .custom-home {
+/* Create a positioning context */
+html.is-custom-home body {
   position: relative;
 }
 
-/* The filter layer */
-html.is-custom-home .custom-home::before {
+/* Overlay lives on the viewport */
+html.is-custom-home body::before {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: 9999;
 
-  /* The effect */
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  /* The filter */
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 
-  /* Optional: a slight haze so it reads as a “filter” */
-  background: rgba(0, 0, 0, 0.06);
+  /* Slight milky haze so it reads as a filter */
+  background: rgba(0, 0, 0, 0.08);
 
   /* Start ON */
   opacity: 1;
 
-  /* Don't block clicks */
   pointer-events: none;
 
-  /* Smooth wake-up */
-  transition: opacity 420ms ease, backdrop-filter 420ms ease, -webkit-backdrop-filter 420ms ease;
+  /* Slow, perceptual unblur */
+  transition:
+    opacity 900ms ease-out,
+    backdrop-filter 900ms ease-out,
+    -webkit-backdrop-filter 900ms ease-out;
+
   will-change: opacity, backdrop-filter;
 }
 
-/* When your image is ready, remove the filter */
-html.is-custom-home.bf-img-ready .custom-home::before {
+/* When homepage image is ready, clear the overlay */
+html.is-custom-home.bf-img-ready body::before {
   opacity: 0;
   backdrop-filter: blur(0);
   -webkit-backdrop-filter: blur(0);
 }
 
-/* Reduced motion: just remove it instantly */
+/* Reduced motion: no animation */
 @media (prefers-reduced-motion: reduce) {
-  html.is-custom-home .custom-home::before {
+  html.is-custom-home body::before {
     transition: none;
   }
 }
