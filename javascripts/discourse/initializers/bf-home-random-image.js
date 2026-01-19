@@ -21,7 +21,7 @@ function findHeaderHomeLink() {
   );
 }
 
-// Wait for the homepage img element to exist (SPA timing)
+// Wait for the homepage image element to exist (SPA timing)
 function waitForHomeImage(maxFrames = 60) {
   return new Promise((resolve) => {
     let frames = 0;
@@ -40,57 +40,65 @@ function waitForHomeImage(maxFrames = 60) {
   });
 }
 
-// Add bf-img-ready in a way that reliably triggers CSS transitions
-function addReadyWithPaint(homeEl) {
-  requestAnimationFrame(() => {
-    // force a style flush so the browser "commits" the hidden state first
-    if (homeEl) void homeEl.offsetHeight;
-
-    requestAnimationFrame(() => {
-      document.documentElement.classList.add("bf-img-ready");
-    });
-  });
-}
-
+// Cancels in-flight homepage loads when navigating away
 let homeLoadToken = 0;
 
-async function startHomepageLoad() {
-  const token = ++homeLoadToken;
-
-  // IMPORTANT: clear ready immediately on entering home (not later)
-  document.documentElement.classList.remove("bf-img-ready");
-
-  // force a flush right away so the hidden state is real
-  const homeEl = document.querySelector(".custom-home");
-  if (homeEl) void homeEl.offsetHeight;
-
-  const img = await waitForHomeImage();
-  if (!img) return;
-  if (token !== homeLoadToken) return;
-
-  // Clear old handlers
-  img.onload = null;
-  img.onerror = null;
-
-  const nextSrc = pickRandom(IMAGES);
-
-  const finish = () => {
-    if (token !== homeLoadToken) return;
-    addReadyWithPaint(homeEl);
-  };
-
-  img.onload = finish;
-  img.onerror = finish;
-
-  img.src = nextSrc;
-
-  // Cached image case: sometimes load won't fire; treat it as loaded
-  if (img.complete && img.naturalWidth > 0) {
-    finish();
-  }
-}
-
 export default apiInitializer((api) => {
+  async function enterHomepage() {
+    const token = ++homeLoadToken;
+
+    // Force a fresh transition cycle EVERY time we enter /
+    const html = document.documentElement;
+    html.classList.add("bf-entering");
+    html.classList.remove("bf-img-ready");
+
+    // Force the browser to commit "opacity: 0" before we flip to ready
+    const homeEl = document.querySelector(".custom-home");
+    if (homeEl) void homeEl.offsetHeight;
+
+    const img = await waitForHomeImage();
+    if (!img) return;
+    if (token !== homeLoadToken) return;
+
+    // Clear old handlers
+    img.onload = null;
+    img.onerror = null;
+
+    const nextSrc = pickRandom(IMAGES);
+
+    const finish = () => {
+      if (token !== homeLoadToken) return;
+
+      // Make sure the hidden state is committed, then trigger fade
+      requestAnimationFrame(() => {
+        if (homeEl) void homeEl.offsetHeight;
+
+        requestAnimationFrame(() => {
+          html.classList.add("bf-img-ready");
+          html.classList.remove("bf-entering");
+        });
+      });
+    };
+
+    img.onload = finish;
+    img.onerror = finish;
+
+    // Start loading AFTER we have entering state
+    img.src = nextSrc;
+
+    // Cached image case
+    if (img.complete && img.naturalWidth > 0) {
+      finish();
+    }
+  }
+
+  function leaveHomepage() {
+    const html = document.documentElement;
+    html.classList.remove("bf-entering");
+    html.classList.remove("bf-img-ready");
+    homeLoadToken += 1; // cancel any in-flight enterHomepage()
+  }
+
   function applyRouteBehavior() {
     const path = window.location.pathname;
     const isHome = path === "/";
@@ -99,13 +107,13 @@ export default apiInitializer((api) => {
     document.documentElement.classList.toggle("is-custom-home", isHome);
     document.body.classList.toggle("is-custom-home", isHome);
 
-    // leaving home: clear ready so it never "sticks"
-    if (!isHome) {
-      document.documentElement.classList.remove("bf-img-ready");
-      homeLoadToken += 1; // cancel any in-flight home load
+    if (isHome) {
+      enterHomepage();
+    } else {
+      leaveHomepage();
     }
 
-    // Header link behavior:
+    // Header home-link behavior:
     // - on /latest -> /
     // - everywhere else -> /latest
     const headerLink = findHeaderHomeLink();
@@ -122,10 +130,6 @@ export default apiInitializer((api) => {
           api.navigateTo(target);
         });
       }
-    }
-
-    if (isHome) {
-      startHomepageLoad();
     }
   }
 
