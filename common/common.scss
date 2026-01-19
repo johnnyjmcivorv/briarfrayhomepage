@@ -1,16 +1,15 @@
 /* =========================================================
-   Briar Fray — Custom Homepage CSS
+   Briar Fray — Custom Homepage (from scratch)
    Goals:
-   - Centered hero layout
    - Hide Discourse header ONLY on /
-   - No flicker/jank: image + content hidden until bf-img-ready
-   - Image: NEVER upscale smaller images
-           only shrink large images to fit caps
-   - On ready: elements appear, THEN fade in (no layout push)
+   - Center hero layout
+   - Image loads first; whole homepage fades in AFTER image load
+   - Fade must work EVERY time you bounce between /latest and /
+   - Image: never upscale; only shrink to fit caps
    ========================================================= */
 
-/* ---------- Layout shell ---------- */
-html.is-custom-home body.is-custom-home .custom-home {
+/* ---------- Homepage layout ---------- */
+html.is-custom-home .custom-home {
   min-height: calc(100vh - var(--header-offset, 0px));
   display: flex;
   flex-direction: column;
@@ -21,7 +20,7 @@ html.is-custom-home body.is-custom-home .custom-home {
   padding: 2rem;
 }
 
-/* ---------- Hide Discourse top header ONLY on homepage ---------- */
+/* ---------- Hide Discourse header ONLY on homepage ---------- */
 html.is-custom-home .d-header {
   display: none;
 }
@@ -30,9 +29,9 @@ html.is-custom-home #main-outlet {
   padding-top: 0;
 }
 
-/* ---------- Title block ---------- */
+/* ---------- Title ---------- */
 html.is-custom-home .home-title-block {
-  margin-bottom: 0.25rem;
+  margin: 0 0 0.25rem 0;
 }
 
 html.is-custom-home .home-kicker {
@@ -49,29 +48,23 @@ html.is-custom-home .home-name {
   margin: 0;
 }
 
-/* ---------- Hero image (NO UPSCALING) ---------- */
-/* Keep it in layout, but invisible until loaded (prevents icon/alt flashes) */
+/* ---------- Image (no upscaling; only shrink) ---------- */
 html.is-custom-home #bf-home-random-img {
-  /* Never force size upward */
+  display: block;
+
+  /* never force bigger */
   width: auto;
   height: auto;
 
-  /* Only shrink to fit these caps */
+  /* only shrink to fit */
   max-width: 500px;
   max-height: 550px;
 
-  /* Safety: never crop, never distort */
+  /* no crop, no distortion */
   object-fit: contain;
-
-  /* Load gating: hidden until ready */
-  opacity: 0;
-  visibility: hidden;
-
-  /* Fade-in happens after ready is set */
-  transition: opacity 220ms ease;
 }
 
-/* Mobile: allow shrinking to viewport width */
+/* allow shrinking to viewport */
 @media (max-width: 520px) {
   html.is-custom-home #bf-home-random-img {
     max-width: 100%;
@@ -91,27 +84,25 @@ html.is-custom-home .home-enter {
   margin-top: 0.25rem;
 }
 
-/* ---------- Load gating + fade-in ---------- */
-/*
-  Step 1: elements exist (so layout is stable), but are invisible.
-  Step 2: when bf-img-ready is added, visibility flips on immediately,
-          and opacity fades up.
-*/
-html.is-custom-home .home-title-block,
-html.is-custom-home .home-tagline,
-html.is-custom-home .home-enter,
-html.is-custom-home .custom-home {
+/* =========================================================
+   Fade system (reliable on every SPA navigation)
+   ---------------------------------------------------------
+   - bf-entering: forced hidden state (set immediately on entering /)
+   - bf-img-ready: image loaded; allow fade to visible
+   ========================================================= */
+
+html.is-custom-home.bf-entering .custom-home {
   opacity: 0;
-  visibility: hidden;
-  transition: opacity 220ms ease;
 }
 
-/* Ready: show instantly, then fade via opacity transition */
-html.is-custom-home.bf-img-ready .custom-home,
-html.is-custom-home.bf-img-ready .home-title-block,
-html.is-custom-home.bf-img-ready .home-tagline,
-html.is-custom-home.bf-img-ready .home-enter,
-html.is-custom-home.bf-img-ready #bf-home-random-img {
-  visibility: visible;
+html.is-custom-home .custom-home {
   opacity: 1;
 }
+
+/* Only animate when we become ready */
+html.is-custom-home.bf-img-ready .custom-home {
+  transition: opacity 220ms ease;
+  opacity: 1;
+}
+
+/* When entering + ready: we remove bf-entering in JS, so opacity goes 0 -> 1 */
