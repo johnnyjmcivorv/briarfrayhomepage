@@ -11,7 +11,6 @@ function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Try a few common header title/logo selectors (themes vary)
 function findHeaderHomeLink() {
   return (
     document.querySelector(".d-header .title a") ||
@@ -22,36 +21,56 @@ function findHeaderHomeLink() {
   );
 }
 
-function setRandomHomepageImage() {
-  const img = document.getElementById("bf-home-random-img");
+// Ensures the fade reliably triggers by adding bf-img-ready on a later frame
+function setReadyNextPaint() {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.documentElement.classList.add("bf-img-ready");
+    });
+  });
+}
+
+// SPA can render the homepage DOM a tick later; wait a few frames for the img to exist
+function waitForHomeImage(maxFrames = 30) {
+  return new Promise((resolve) => {
+    let frames = 0;
+
+    function tick() {
+      const img = document.getElementById("bf-home-random-img");
+      if (img) return resolve(img);
+
+      frames += 1;
+      if (frames >= maxFrames) return resolve(null);
+
+      requestAnimationFrame(tick);
+    }
+
+    tick();
+  });
+}
+
+async function setRandomHomepageImageWithFade() {
+  const img = await waitForHomeImage();
   if (!img) return;
 
-  // Mark "not ready" BEFORE changing src (prevents broken icon/alt flashes if CSS hides until ready)
+  // Force "not ready" state first (this is what makes the transition consistent)
   document.documentElement.classList.remove("bf-img-ready");
 
   // Clear old handlers
   img.onload = null;
   img.onerror = null;
 
-  // Pick next image
   const nextSrc = pickRandom(IMAGES);
 
-  // When it loads, mark ready (instant show; no fade)
-  img.onload = () => {
-    document.documentElement.classList.add("bf-img-ready");
-  };
+  img.onload = () => setReadyNextPaint();
+  img.onerror = () => setReadyNextPaint();
 
-  // If it fails, still mark ready so the page isn't blank forever
-  img.onerror = () => {
-    document.documentElement.classList.add("bf-img-ready");
-  };
-
-  // Trigger the load
+  // Set src *after* removing ready
   img.src = nextSrc;
 
-  // Handle the "cached image" case where onload may not fire reliably
+  // Cached image case: onload can be skipped; still trigger fade
   if (img.complete && img.naturalWidth > 0) {
-    document.documentElement.classList.add("bf-img-ready");
+    setReadyNextPaint();
   }
 }
 
@@ -61,11 +80,10 @@ export default apiInitializer((api) => {
     const isHome = path === "/";
     const isLatest = path === "/latest";
 
-    // Homepage-only class (used by CSS to hide header etc.)
     document.documentElement.classList.toggle("is-custom-home", isHome);
     document.body.classList.toggle("is-custom-home", isHome);
 
-    // If we leave the homepage, clear the "ready" state so it can't stick
+    // Always clear ready when leaving home so it can't "stick"
     if (!isHome) {
       document.documentElement.classList.remove("bf-img-ready");
     }
@@ -75,29 +93,25 @@ export default apiInitializer((api) => {
     // - everywhere else -> /latest
     const headerLink = findHeaderHomeLink();
     if (headerLink) {
-      const dest = isLatest ? "/" : "/latest";
-      headerLink.setAttribute("href", dest);
+      headerLink.setAttribute("href", isLatest ? "/" : "/latest");
 
-      // Bind click once (SPA-friendly)
       if (!headerLink.dataset.bfHomeBound) {
         headerLink.dataset.bfHomeBound = "1";
         headerLink.addEventListener("click", (e) => {
-          // allow ctrl/cmd click to open in new tab
           if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
 
-          const nowIsLatest = window.location.pathname === "/latest";
-          const target = nowIsLatest ? "/" : "/latest";
-
+          const target = window.location.pathname === "/latest" ? "/" : "/latest";
           e.preventDefault();
           api.navigateTo(target);
         });
       }
     }
 
-    // Random image only on homepage
-    if (isHome) setRandomHomepageImage();
+    if (isHome) {
+      setRandomHomepageImageWithFade();
+    }
   }
 
   api.onPageChange(() => applyRouteBehavior());
-  applyRouteBehavior(); // run once on boot
+  applyRouteBehavior();
 });
