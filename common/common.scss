@@ -104,3 +104,13 @@ html.is-custom-home.bf-img-ready .home-tagline,
 html.is-custom-home.bf-img-ready .home-enter {
   display: block;
 }
+
+/* Fade-in the whole homepage once ready */
+html.is-custom-home .custom-home {
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+html.is-custom-home.bf-img-ready .custom-home {
+  opacity: 1;
+}
