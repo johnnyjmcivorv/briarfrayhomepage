@@ -1,11 +1,12 @@
 /* =========================================================
-   Briar Fray — Custom Homepage CSS (from scratch)
+   Briar Fray — Custom Homepage CSS
    Goals:
    - Centered hero layout
    - Hide Discourse header ONLY on /
-   - No flicker/jank: image + text hidden until bf-img-ready
+   - No flicker/jank: image + content hidden until bf-img-ready
    - Image: NEVER upscale smaller images
            only shrink large images to fit caps
+   - On ready: elements appear, THEN fade in (no layout push)
    ========================================================= */
 
 /* ---------- Layout shell ---------- */
@@ -49,10 +50,8 @@ html.is-custom-home .home-name {
 }
 
 /* ---------- Hero image (NO UPSCALING) ---------- */
-/* Default: hidden (prevents broken-image icon / alt flashes) */
+/* Keep it in layout, but invisible until loaded (prevents icon/alt flashes) */
 html.is-custom-home #bf-home-random-img {
-  display: none;
-
   /* Never force size upward */
   width: auto;
   height: auto;
@@ -63,11 +62,13 @@ html.is-custom-home #bf-home-random-img {
 
   /* Safety: never crop, never distort */
   object-fit: contain;
-}
 
-/* Once loaded: show */
-html.is-custom-home.bf-img-ready #bf-home-random-img {
-  display: block;
+  /* Load gating: hidden until ready */
+  opacity: 0;
+  visibility: hidden;
+
+  /* Fade-in happens after ready is set */
+  transition: opacity 220ms ease;
 }
 
 /* Mobile: allow shrinking to viewport width */
@@ -90,27 +91,27 @@ html.is-custom-home .home-enter {
   margin-top: 0.25rem;
 }
 
-/* ---------- Load gating (no layout push) ---------- */
-/* Hide text + button until image is ready */
+/* ---------- Load gating + fade-in ---------- */
+/*
+  Step 1: elements exist (so layout is stable), but are invisible.
+  Step 2: when bf-img-ready is added, visibility flips on immediately,
+          and opacity fades up.
+*/
 html.is-custom-home .home-title-block,
 html.is-custom-home .home-tagline,
-html.is-custom-home .home-enter {
-  display: none;
-}
-
-/* Reveal instantly once image has loaded */
-html.is-custom-home.bf-img-ready .home-title-block,
-html.is-custom-home.bf-img-ready .home-tagline,
-html.is-custom-home.bf-img-ready .home-enter {
-  display: block;
-}
-
-/* Fade-in the whole homepage once ready */
+html.is-custom-home .home-enter,
 html.is-custom-home .custom-home {
   opacity: 0;
+  visibility: hidden;
   transition: opacity 220ms ease;
 }
 
-html.is-custom-home.bf-img-ready .custom-home {
+/* Ready: show instantly, then fade via opacity transition */
+html.is-custom-home.bf-img-ready .custom-home,
+html.is-custom-home.bf-img-ready .home-title-block,
+html.is-custom-home.bf-img-ready .home-tagline,
+html.is-custom-home.bf-img-ready .home-enter,
+html.is-custom-home.bf-img-ready #bf-home-random-img {
+  visibility: visible;
   opacity: 1;
 }
