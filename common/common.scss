@@ -1,15 +1,17 @@
 /* =========================================================
    Briar Fray — Custom Homepage (from scratch)
-   Goals:
-   - Hide Discourse header ONLY on /
-   - Center hero layout
-   - Image loads first; whole homepage fades in AFTER image load
-   - Fade must work EVERY time you bounce between /latest and /
-   - Image: never upscale; only shrink to fit caps
+   Depends on JS toggling these <html> classes:
+   - is-custom-home  (when on "/")
+   - bf-entering     (set immediately upon entering "/")
+   - bf-img-ready    (set after image load)
    ========================================================= */
 
-/* ---------- Homepage layout ---------- */
-html.is-custom-home .custom-home {
+/* ---------------------------------------------------------
+   1) Base layout for homepage markup (prevents left-flash)
+   --------------------------------------------------------- */
+/* Apply to .custom-home always so it's centered immediately,
+   even before is-custom-home is toggled by JS. */
+.custom-home {
   min-height: calc(100vh - var(--header-offset, 0px));
   display: flex;
   flex-direction: column;
@@ -18,9 +20,14 @@ html.is-custom-home .custom-home {
   text-align: center;
   gap: 1rem;
   padding: 2rem;
+
+  /* Start hidden to prevent any first-paint flash */
+  opacity: 0;
 }
 
-/* ---------- Hide Discourse header ONLY on homepage ---------- */
+/* ---------------------------------------------------------
+   2) Homepage-only header removal
+   --------------------------------------------------------- */
 html.is-custom-home .d-header {
   display: none;
 }
@@ -29,80 +36,80 @@ html.is-custom-home #main-outlet {
   padding-top: 0;
 }
 
-/* ---------- Title ---------- */
-html.is-custom-home .home-title-block {
+/* ---------------------------------------------------------
+   3) Typography / spacing
+   --------------------------------------------------------- */
+.home-title-block {
   margin: 0 0 0.25rem 0;
 }
 
-html.is-custom-home .home-kicker {
+.home-kicker {
   font-size: 0.9rem;
   letter-spacing: 0.05em;
   opacity: 0.7;
   margin: 0 0 0.25rem 0;
 }
 
-html.is-custom-home .home-name {
+.home-name {
   font-size: 3rem;
   font-weight: 400;
   line-height: 1.1;
   margin: 0;
 }
 
-/* ---------- Image (no upscaling; only shrink) ---------- */
-html.is-custom-home #bf-home-random-img {
-  display: block;
-
-  /* never force bigger */
-  width: auto;
-  height: auto;
-
-  /* only shrink to fit */
-  max-width: 500px;
-  max-height: 550px;
-
-  /* no crop, no distortion */
-  object-fit: contain;
-}
-
-/* allow shrinking to viewport */
-@media (max-width: 520px) {
-  html.is-custom-home #bf-home-random-img {
-    max-width: 100%;
-  }
-}
-
-/* ---------- Tagline ---------- */
-html.is-custom-home .home-tagline {
+.home-tagline {
   max-width: 520px;
   font-size: 1rem;
   opacity: 0.75;
   margin: 0.25rem 0 0.5rem 0;
 }
 
-/* ---------- Button ---------- */
-html.is-custom-home .home-enter {
+.home-enter {
   margin-top: 0.25rem;
 }
 
-/* =========================================================
-   Fade system (reliable on every SPA navigation)
-   ---------------------------------------------------------
-   - bf-entering: forced hidden state (set immediately on entering /)
-   - bf-img-ready: image loaded; allow fade to visible
-   ========================================================= */
+/* ---------------------------------------------------------
+   4) Image rules (no upscaling, only shrink)
+   --------------------------------------------------------- */
+#bf-home-random-img {
+  display: block;
 
+  /* Do not force size upward */
+  width: auto;
+  height: auto;
+
+  /* Only shrink to fit */
+  max-width: 500px;
+  max-height: 550px;
+
+  /* Never crop, never distort */
+  object-fit: contain;
+}
+
+/* On small screens, allow shrinking to viewport width */
+@media (max-width: 520px) {
+  #bf-home-random-img {
+    max-width: 100%;
+  }
+}
+
+/* ---------------------------------------------------------
+   5) Fade system (reliable every time)
+   --------------------------------------------------------- */
+/* While entering, keep hidden */
 html.is-custom-home.bf-entering .custom-home {
   opacity: 0;
 }
 
-html.is-custom-home .custom-home {
-  opacity: 1;
-}
-
-/* Only animate when we become ready */
+/* When image is ready, fade to visible */
 html.is-custom-home.bf-img-ready .custom-home {
-  transition: opacity 220ms ease;
   opacity: 1;
+  transition: opacity 220ms ease;
 }
 
-/* When entering + ready: we remove bf-entering in JS, so opacity goes 0 -> 1 */
+/* Safety: if not on the homepage, don't hide .custom-home
+   (in case Discourse ever renders it somewhere unexpected) */
+html:not(.is-custom-home) .custom-home {
+  opacity: 1;
+  transition: none;
+}
