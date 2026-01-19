@@ -21,17 +21,8 @@ function findHeaderHomeLink() {
   );
 }
 
-// Ensures the fade reliably triggers by adding bf-img-ready on a later frame
-function setReadyNextPaint() {
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      document.documentElement.classList.add("bf-img-ready");
-    });
-  });
-}
-
-// SPA can render the homepage DOM a tick later; wait a few frames for the img to exist
-function waitForHomeImage(maxFrames = 30) {
+// Wait for the homepage img element to exist (SPA timing)
+function waitForHomeImage(maxFrames = 60) {
   return new Promise((resolve) => {
     let frames = 0;
 
@@ -49,12 +40,33 @@ function waitForHomeImage(maxFrames = 30) {
   });
 }
 
-async function setRandomHomepageImageWithFade() {
+// Add bf-img-ready in a way that reliably triggers CSS transitions
+function addReadyWithPaint(homeEl) {
+  requestAnimationFrame(() => {
+    // force a style flush so the browser "commits" the hidden state first
+    if (homeEl) void homeEl.offsetHeight;
+
+    requestAnimationFrame(() => {
+      document.documentElement.classList.add("bf-img-ready");
+    });
+  });
+}
+
+let homeLoadToken = 0;
+
+async function startHomepageLoad() {
+  const token = ++homeLoadToken;
+
+  // IMPORTANT: clear ready immediately on entering home (not later)
+  document.documentElement.classList.remove("bf-img-ready");
+
+  // force a flush right away so the hidden state is real
+  const homeEl = document.querySelector(".custom-home");
+  if (homeEl) void homeEl.offsetHeight;
+
   const img = await waitForHomeImage();
   if (!img) return;
-
-  // Force "not ready" state first (this is what makes the transition consistent)
-  document.documentElement.classList.remove("bf-img-ready");
+  if (token !== homeLoadToken) return;
 
   // Clear old handlers
   img.onload = null;
@@ -62,15 +74,19 @@ async function setRandomHomepageImageWithFade() {
 
   const nextSrc = pickRandom(IMAGES);
 
-  img.onload = () => setReadyNextPaint();
-  img.onerror = () => setReadyNextPaint();
+  const finish = () => {
+    if (token !== homeLoadToken) return;
+    addReadyWithPaint(homeEl);
+  };
 
-  // Set src *after* removing ready
+  img.onload = finish;
+  img.onerror = finish;
+
   img.src = nextSrc;
 
-  // Cached image case: onload can be skipped; still trigger fade
+  // Cached image case: sometimes load won't fire; treat it as loaded
   if (img.complete && img.naturalWidth > 0) {
-    setReadyNextPaint();
+    finish();
   }
 }
 
@@ -83,9 +99,10 @@ export default apiInitializer((api) => {
     document.documentElement.classList.toggle("is-custom-home", isHome);
     document.body.classList.toggle("is-custom-home", isHome);
 
-    // Always clear ready when leaving home so it can't "stick"
+    // leaving home: clear ready so it never "sticks"
     if (!isHome) {
       document.documentElement.classList.remove("bf-img-ready");
+      homeLoadToken += 1; // cancel any in-flight home load
     }
 
     // Header link behavior:
@@ -108,7 +125,7 @@ export default apiInitializer((api) => {
     }
 
     if (isHome) {
-      setRandomHomepageImageWithFade();
+      startHomepageLoad();
     }
   }
 
