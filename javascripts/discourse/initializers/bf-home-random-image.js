@@ -5,6 +5,9 @@ const IMAGES = [
   "https://i.imgur.com/RQEMEV6.jpg",
   "https://i.imgur.com/Yza7azn.png",
   "https://i.imgur.com/iIVkzqo.png",
+  "https://i.imgur.com/S70u2Ag.jpg",
+  "https://i.imgur.com/XICP8rS.jpg",
+  "https://i.imgur.com/XICP8rS.jpg",
 ];
 
 function pickRandom(arr) {
