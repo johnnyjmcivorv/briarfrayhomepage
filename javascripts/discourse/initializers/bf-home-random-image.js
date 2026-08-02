@@ -8,7 +8,6 @@ const IMAGES = [
   "https://i.imgur.com/S70u2Ag.jpg",
   "https://i.imgur.com/XICP8rS.jpg",
   "https://i.imgur.com/XICP8rS.jpg",
-  "https://i.imgur.com/DiqwRnq.png",
 ];
 
 function pickRandom(arr) {
