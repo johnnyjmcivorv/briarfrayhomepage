@@ -1,0 +1,22 @@
+<template>
+  <div class="custom-home">
+    <div class="home-title-block">
+      <div class="home-kicker">Welcome to</div>
+      <div class="home-name">Briar Fray</div>
+    </div>
+
+    <img
+      id="bf-home-random-img"
+      alt="Homepage image"
+      loading="eager"
+    />
+
+    <p class="home-tagline">
+      A clubhouse for avant-garde thinkers.
+    </p>
+
+    <a class="btn btn-primary home-enter" href="/latest">
+      Enter the forum
+    </a>
+  </div>
+</template>
